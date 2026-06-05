@@ -10,29 +10,28 @@ if 'memo_list' not in st.session_state:
         {"제목": "앱 만들자", "본문": "내 생각메모 정리하고싶어", "출처": "하영", "작성일": "2026-06-05"}
     ]
 
-# --- ✍️ 앱 화면에서 메모 입력하는 칸 ---
-st.subheader("📝 새 메모 작성하기")
-with st.form("memo_form", clear_on_submit=True):
-    new_title = st.text_input("제목")
-    new_content = st.text_area("본문")
-    new_author = st.text_input("작성자(출처)", value="하영")
-    
-    # [메모 저장하기] 버튼
-    submitted = st.form_submit_button("메모 저장하기")
-    if submitted:
-        if new_title and new_content:
-            # 현재 날짜 자동으로 넣기
-            current_date = datetime.now().strftime("%Y-%m-%d")
-            # 입력한 내용을 저장 공간에 추가
-            st.session_state.memo_list.append({
-                "제목": new_title,
-                "본문": new_content,
-                "출처": new_author,
-                "작성일": current_date
-            })
-            st.success("메모가 성공적으로 저장되었습니다!")
-        else:
-            st.error("제목과 본문을 모두 입력해 주세요!")
+# --- ✍️ 접고 펼칠 수 있는 새 메모 작성 칸 ---
+# st.expander를 사용하면 클릭했을 때만 쏙 펼쳐집니다.
+with st.expander("📝 새 메모 작성하기 (여기를 눌러 펼치세요)", expanded=False):
+    with st.form("memo_form", clear_on_submit=True):
+        new_title = st.text_input("제목")
+        new_content = st.text_area("본문")
+        new_author = st.text_input("작성자(출처)", value="하영")
+        
+        # [메모 저장하기] 버튼
+        submitted = st.form_submit_button("메모 저장하기")
+        if submitted:
+            if new_title and new_content:
+                current_date = datetime.now().strftime("%Y-%m-%d")
+                st.session_state.memo_list.append({
+                    "제목": new_title,
+                    "본문": new_content,
+                    "출처": new_author,
+                    "작성일": current_date
+                })
+                st.success("메모가 성공적으로 저장되었습니다!")
+            else:
+                st.error("제목과 본문을 모두 입력해 주세요!")
 
 st.write("---")
 
