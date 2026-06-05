@@ -27,7 +27,7 @@ with st.expander("📝 새 메모 작성하기 (여기를 눌러 펼치세요)",
                     "출처": new_author,
                     "작성일": current_date
                 })
-                st.rerun()  # 화면 즉시 새로고침
+                st.rerun()
             else:
                 st.error("제목과 본문을 모두 입력해 주세요!")
 
@@ -37,7 +37,6 @@ st.write("---")
 search = st.text_input("메모 검색")
 
 # --- 📋 메모 보여주기 및 수정 기능 ---
-# 검색어 필터링
 filtered_memos = []
 for idx, memo in enumerate(st.session_state.memo_list):
     if search and search not in memo['본문']:
@@ -48,11 +47,17 @@ for idx, memo in enumerate(st.session_state.memo_list):
 cols = st.columns(2)
 for display_idx, (original_idx, memo) in enumerate(filtered_memos):
     with cols[display_idx % 2]:
-        # 본문과 출처 출력 (제목은 숨김 처리 유지)
         st.write(f"{memo['본문']}")
         st.caption(f"{memo['출처']} | {memo['작성일']}")
         
-        # 🛠️ 각 메모별 개별 수정 칸 (접이식)
+        # 🛠️ 각 메모별 개별 수정 칸 (괄호 오타를 완벽하게 고쳤습니다!)
         with st.expander("✏️ 이 메모 수정하기", expanded=False):
-            # 글을 수정할 수 있는 입력창 (기존 내용이 채워져 있음)
-            edit_content = st.text_area("본문 수정", value
+            edit_content = st.text_area("본문 수정", value=memo['본문'], key=f"edit_content_{original_idx}")
+            edit_author = st.text_input("작성자 수정", value=memo['출처'], key=f"edit_author_{original_idx}")
+            
+            if st.button("수정 완료", key=f"edit_btn_{original_idx}"):
+                st.session_state.memo_list[original_idx]['본문'] = edit_content
+                st.session_state.memo_list[original_idx]['출처'] = edit_author
+                st.success("수정되었습니다!")
+                st.rerun()
+        st.write("")
