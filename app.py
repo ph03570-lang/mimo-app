@@ -1,27 +1,24 @@
 import streamlit as st
-import subprocess
-import sys
-
-# 🚀 에러를 일으키는 주범인 도구들을 강제로 자동 설치하는 마법의 코드입니다.
-def install_packages():
-    packages = ["gspread", "google-auth", "pandas", "pytz"]
-    for package in packages:
-        try:
-            __import__(package)
-        except ImportError:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-install_packages()
-
-# 이제 도구들이 다 설치되었으니 정상적으로 불러옵니다.
 from google.oauth2.service_account import Credentials
 import gspread
 import pandas as pd
 from datetime import datetime
 import pytz
 
-# 🛠️ 여기 따옴표 안에 질문자님의 진짜 구글 시트 주소를 붙여넣으세요!
-SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/질문자님의_시트_주소/edit"
+# 🔍 주소를 직접 입력하지 않아도, 인터넷 창 주소에서 구글 시트 ID를 자동으로 추출하는 마법의 기능입니다.
+def get_spreadsheet_url_from_query():
+    query_params = st.query_params
+    if "sheet_url" in query_params:
+        return query_params["sheet_url"]
+    return None
+
+# 기본 연결 주소 설정
+detected_url = get_spreadsheet_url_from_query()
+if detected_url:
+    SPREADSHEET_URL = detected_url
+else:
+    # 주소가 감지되지 않았을 때만 예시 주소를 사용합니다.
+    SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMCEUiO_naNMIlevAIBADANBgkqhki9w0BA/edit"
 
 def get_gspread_client():
     scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
@@ -33,7 +30,15 @@ try:
     doc = gc.open_by_url(SPREADSHEET_URL)
     worksheet = doc.get_worksheet(0)
 except Exception as e:
-    st.error("구글 시트 주소를 확인하시거나, 복사한 이메일을 구글 시트에 '공유(편집자)' 했는지 확인해 주세요!")
+    st.title("📝 나만의 스마트 메모 앱")
+    st.error("⚠️ 구글 시트와 앱이 아직 연결되지 않았습니다.")
+    st.info("아래 빈칸에 질문자님의 [구글 시트 인터넷 주소]를 통째로 붙여넣고 엔터를 치시면 즉시 연결됩니다!")
+    
+    # 코드를 수정할 필요 없이, 앱 화면에서 직접 주소를 넣고 쓸 수 있는 안전장치입니다.
+    input_url = st.text_input("여기에 진짜 구글 시트 주소를 붙여넣으세요:", value=SPREADSHEET_URL)
+    if input_url and input_url != SPREADSSHEET_URL:
+        st.query_params["sheet_url"] = input_url
+        st.rerun()
     st.stop()
 
 KST = pytz.timezone('Asia/Seoul')
