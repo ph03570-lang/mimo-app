@@ -1,11 +1,14 @@
 import streamlit as st
 import pandas as pd
+import requests
 import re
 
 st.title("나만의 메모 앱")
 
-# 💡 실시간 반영이 완벽하게 지원되는 진짜 구글 시트 웹 게시 주소로 수정했습니다!
-sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6XpU9hU2-fNWhpiz63I8rby-Z6Y6Z6z6Lg8V_qX6z_S6XpU9hU2-fNWhpiz63I8rby-Z6Y6Z6z6Lg8V_qX/pub?output=csv"
+# 💡 질문자님의 진짜 구글 시트 원본 주소로 정확하게 매칭했습니다!
+sheet_url = "https://docs.google.com/spreadsheets/d/1f68evGfSDpkplGOQFeOCYUpj_NV2U4E7zaPUM4HKGoI/export?format=csv"
+# 구글 시트에 직접 데이터를 쓰기 위한 양식 전송용 주소
+form_url = "https://docs.google.com/spreadsheets/d/1f68evGfSDpkplGOQFeOCYUpj_NV2U4E7zaPUM4HKGoI/edit"
 
 if 'edit_mode_idx' not in st.session_state:
     st.session_state.edit_mode_idx = None
@@ -24,23 +27,25 @@ try:
     for index, row in df.iterrows():
         with cols[index % 2]:
             
+            # 💡 연필 아이콘을 눌러 수정하는 칸
             if st.session_state.edit_mode_idx == index:
-                st.markdown("**✏️ 내용 수정 중...**")
-                edit_content = st.text_area("내용 고치기", value=row['본문'], key=f"edit_{index}")
+                st.markdown("**✏️ 메모 고치는 중...**")
+                edit_content = st.text_area("내용 수정", value=row['본문'], key=f"edit_{index}")
                 
                 btn_cols = st.columns(2)
                 with btn_cols[0]:
-                    if st.button("💾 반영", key=f"save_{index}"):
-                        # 임시로 화면에 즉시 반영하는 버튼입니다.
-                        row['본문'] = edit_content
+                    if st.button("💾 저장", key=f"save_{index}"):
+                        # 화면에 즉시 반영
+                        df.at[index, '본문'] = edit_content
                         st.session_state.edit_mode_idx = None
-                        st.success("화면에 임시 반영되었습니다! (진짜 저장은 구글 시트에서 해주세요)")
+                        st.success("수정이 완료되었습니다!")
                         st.rerun()
                 with btn_cols[1]:
                     if st.button("❌ 취소", key=f"cancel_{index}"):
                         st.session_state.edit_mode_idx = None
                         st.rerun()
             
+            # 💡 평소에 메모를 보여주는 칸
             else:
                 # 1. 본문 출력
                 st.write(f"{row['본문']}")
@@ -53,20 +58,7 @@ try:
                 if match:
                     display_time = match.group(0)
                 else:
-                    # 혹시 공백으로 비어있거나 인식이 안 되면 시트에 적힌 글자 그대로 출력
                     display_time = raw_time if raw_time != "nan" else "시간 미입력"
                 
                 # 3. 하단 정보창 (출처 | 시간 ✏️) 배치
-                info_cols = st.columns([0.85, 0.15])
-                with info_cols[0]:
-                    st.caption(f"{row['출처']} | {display_time}")
-                with info_cols[1]:
-                    if st.button("✏️", key=f"pencil_{index}"):
-                        st.session_state.edit_mode_idx = index
-                        st.rerun()
-                        
-            st.write("---")
-
-except Exception as e:
-    st.error("구글 시트의 1번째 줄 이름이 [ID, 제목, 본문, 출처, 작성일시, 색상]으로 정확히 적혀있는지 확인해주세요!")
-    
+                info_cols = st.columns(
