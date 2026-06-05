@@ -11,11 +11,10 @@ if 'memo_list' not in st.session_state:
     ]
 
 # --- ✍️ 접고 펼칠 수 있는 새 메모 작성 칸 ---
-# st.expander를 사용하면 클릭했을 때만 쏙 펼쳐집니다.
-with st.expander(" ", expanded=False):
+with st.expander("📝 새 메모 작성하기 (여기를 눌러 펼치세요)", expanded=False):
     with st.form("memo_form", clear_on_submit=True):
-        new_title = st.text_input("제목")
-        new_content = st.text_area("본문")
+        new_title = st.text_input("제목 (메모를 구별할 이름)")
+        new_content = st.text_area("본문 내용")
         new_author = st.text_input("작성자(출처)", value="하영")
         
         # [메모 저장하기] 버튼
@@ -42,10 +41,10 @@ search = st.text_input("메모 검색")
 if search:
     df = df[df['본문'].str.contains(search, na=False)]
 
-# 2단 카드 레이아웃으로 메모 출력하기
+# 2단 카드 레이아웃으로 메모 출력하기 (제목 출력 부분 제외)
 cols = st.columns(2)
 for index, row in df.iterrows():
     with cols[index % 2]:
-        st.markdown(f"### {row['제목']}")
+        # 기존에 있던 제목 출력 코드(st.markdown)를 제외하여 본문부터 출력되게 했습니다.
         st.write(f"{row['본문']}")
         st.caption(f"{row['출처']} | {row['작성일']}")
