@@ -35,7 +35,7 @@ except Exception as e:
     st.info("아래 빈칸에 질문자님의 [구글 시트 인터넷 주소]를 통째로 붙여넣고 엔터를 치시면 즉시 연결됩니다!")
     
     # 코드를 수정할 필요 없이, 앱 화면에서 직접 주소를 넣고 쓸 수 있는 안전장치입니다.
-    input_url = st.text_input("여기에 진짜 구글 시트 주소를 붙여넣으세요:", value=SPREADSHEET_URL)
+    input_url = st.text_input("https://docs.google.com/spreadsheets/d/1f68evGfSDpkplGOQFeOCYUpj_NV2U4E7zaPUM4HKGoI/edit?gid=0#gid=0:", value=SPREADSHEET_URL)
     if input_url and input_url != SPREADSSHEET_URL:
         st.query_params["sheet_url"] = input_url
         st.rerun()
