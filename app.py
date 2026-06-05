@@ -1,12 +1,4 @@
-
 import streamlit as st
-import pandas as pd
-
-st.title("나만의 메모 앱")
-
-# 데이터 불러오기 (이미 연동된 시트 데이터 사용)
-# 실제 서비스 시에는 여기서 시트 데이터를 다시 로드합니다.
-data = [['ID', '제목', '본문', '출처', '작성일', '색상'], ['1', '앱 만들자', '전문이 잘 보입니다', '나import streamlit as st
 import pandas as pd
 
 st.title("나만의 메모 앱")
