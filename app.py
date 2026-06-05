@@ -1,3 +1,6 @@
+import os
+os.system("pip install gspread google-auth pandas pytz")
+
 import streamlit as st
 from google.oauth2.service_account import Credentials
 import gspread
