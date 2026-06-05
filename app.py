@@ -10,14 +10,13 @@ if 'memo_list' not in st.session_state:
         {"제목": "앱 만들자", "본문": "내 생각메모 정리하고싶어", "출처": "하영", "작성일": "2026-06-05"}
     ]
 
-# --- ✍️ 접고 펼칠 수 있는 새 메모 작성 칸 ---
+# --- ✍️ 새 메모 작성 칸 ---
 with st.expander("📝 새 메모 작성하기 (여기를 눌러 펼치세요)", expanded=False):
     with st.form("memo_form", clear_on_submit=True):
         new_title = st.text_input("제목 (메모를 구별할 이름)")
         new_content = st.text_area("본문 내용")
         new_author = st.text_input("작성자(출처)", value="하영")
         
-        # [메모 저장하기] 버튼
         submitted = st.form_submit_button("메모 저장하기")
         if submitted:
             if new_title and new_content:
@@ -28,23 +27,32 @@ with st.expander("📝 새 메모 작성하기 (여기를 눌러 펼치세요)",
                     "출처": new_author,
                     "작성일": current_date
                 })
-                st.success("메모가 성공적으로 저장되었습니다!")
+                st.rerun()  # 화면 즉시 새로고침
             else:
                 st.error("제목과 본문을 모두 입력해 주세요!")
 
 st.write("---")
 
-# --- 🔍 검색 및 메모 보여주기 칸 ---
-df = pd.DataFrame(st.session_state.memo_list)
-
+# --- 🔍 검색 기능 ---
 search = st.text_input("메모 검색")
-if search:
-    df = df[df['본문'].str.contains(search, na=False)]
 
-# 2단 카드 레이아웃으로 메모 출력하기 (제목 출력 부분 제외)
+# --- 📋 메모 보여주기 및 수정 기능 ---
+# 검색어 필터링
+filtered_memos = []
+for idx, memo in enumerate(st.session_state.memo_list):
+    if search and search not in memo['본문']:
+        continue
+    filtered_memos.append((idx, memo))
+
+# 2단 카드 레이아웃으로 메모 출력하기
 cols = st.columns(2)
-for index, row in df.iterrows():
-    with cols[index % 2]:
-        # 기존에 있던 제목 출력 코드(st.markdown)를 제외하여 본문부터 출력되게 했습니다.
-        st.write(f"{row['본문']}")
-        st.caption(f"{row['출처']} | {row['작성일']}")
+for display_idx, (original_idx, memo) in enumerate(filtered_memos):
+    with cols[display_idx % 2]:
+        # 본문과 출처 출력 (제목은 숨김 처리 유지)
+        st.write(f"{memo['본문']}")
+        st.caption(f"{memo['출처']} | {memo['작성일']}")
+        
+        # 🛠️ 각 메모별 개별 수정 칸 (접이식)
+        with st.expander("✏️ 이 메모 수정하기", expanded=False):
+            # 글을 수정할 수 있는 입력창 (기존 내용이 채워져 있음)
+            edit_content = st.text_area("본문 수정", value
