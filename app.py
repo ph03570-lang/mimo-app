@@ -1,65 +1,63 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 
 st.title("나만의 메모 앱")
 
-# 앱 내부 메모리에 임시 저장 공간 만들기 (기본 예시에 시간 정보 추가)
-if 'memo_list' not in st.session_state:
-    st.session_state.memo_list = [
-        {"제목": "앱 만들자", "본문": "내 생각메모 정리하고싶어", "출처": "하영", "작성일": "2026-06-05 11:14"}
-    ]
+# 질문자님의 진짜 구글 시트 변환 주소입니다.
+sheet_url = "https://docs.google.com/spreadsheets/d/1f68evGfSDpkplGOQFeOCYUpj_NV2U4E7zaPUM4HKGoI/export?format=csv"
 
 # 어떤 메모를 수정 중인지 기억하는 저장소
 if 'edit_mode_idx' not in st.session_state:
     st.session_state.edit_mode_idx = None
 
-# --- ✍️ 새 메모 작성 칸 ---
-with st.expander("📝 새 메모 작성하기 (여기를 눌러 펼치세요)", expanded=False):
-    with st.form("memo_form", clear_on_submit=True):
-        new_title = st.text_input("제목 (메모를 구별할 이름)")
-        new_content = st.text_area("본문 내용")
-        new_author = st.text_input("작성자(출처)", value="하영")
-        
-        submitted = st.form_submit_button("메모 저장하기")
-        if submitted:
-            if new_title and new_content:
-                # 💡 날짜 뒤에 시:분(예: 2026-06-05 11:14)까지 자동 기록하도록 변경
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
-                st.session_state.memo_list.append({
-                    "제목": new_title,
-                    "본문": new_content,
-                    "출처": new_author,
-                    "작성일": current_time
-                })
-                st.rerun()
-            else:
-                st.error("제목과 본문을 모두 입력해 주세요!")
+try:
+    # 구글 시트 실시간으로 읽어오기
+    df = pd.read_csv(sheet_url)
+    
+    # --- 🔍 검색 기능 ---
+    search = st.text_input("메모 검색")
+    if search:
+        df = df[df['본문'].str.contains(search, na=False)]
 
-st.write("---")
-
-# --- 🔍 검색 기능 ---
-search = st.text_input("메모 검색")
-
-# --- 📋 메모 보여주기 및 수정 기능 ---
-filtered_memos = []
-for idx, memo in enumerate(st.session_state.memo_list):
-    if search and search not in memo['본문']:
-        continue
-    filtered_memos.append((idx, memo))
-
-# 2단 카드 레이아웃으로 메모 출력하기
-cols = st.columns(2)
-for display_idx, (original_idx, memo) in enumerate(filtered_memos):
-    with cols[display_idx % 2]:
-        
-        # 💡 현재 수정 모드일 때의 화면
-        if st.session_state.edit_mode_idx == original_idx:
-            st.markdown("**✏️ 메모 수정 중...**")
-            edit_content = st.text_area("본문 고치기", value=memo['본문'], key=f"direct_edit_{original_idx}")
+    # --- 📋 메모 보여주기 및 수정 아이콘 배치 ---
+    cols = st.columns(2)
+    for index, row in df.iterrows():
+        with cols[index % 2]:
             
-            btn_cols = st.columns(2)
-            with btn_cols[0]:
-                if st.button("💾 저장", key=f"save_btn_{original_idx}"):
-                    st.session_state.memo_list[original_idx]['본문'] = edit_content
-                    # 수정 완료 시점의 시간으로 업데이트하고
+            # 💡 수정 아이콘(✏️)을 눌렀을 때 나타나는 수정 창
+            if st.session_state.edit_mode_idx == index:
+                st.markdown("**✏️ 구글 시트 메모 복사 후 수정 중...**")
+                edit_content = st.text_area("내용 고치기 (임시)", value=row['본문'], key=f"edit_{index}")
+                
+                btn_cols = st.columns(2)
+                with btn_cols[0]:
+                    if st.button("💾 반영", key=f"save_{index}"):
+                        # 임시로 화면에만 반영 (진짜 저장은 구글 시트에서 직접 하시면 앱에 실시간 반영됩니다!)
+                        df.at[index, '본문'] = edit_content
+                        st.session_state.edit_mode_idx = None
+                        st.rerun()
+                with btn_cols[1]:
+                    if st.button("❌ 취소", key=f"cancel_{index}"):
+                        st.session_state.edit_mode_idx = None
+                        st.rerun()
+            
+            # 💡 평소에 구글 시트 내용을 보여주는 화면
+            else:
+                # 1. 본문 출력
+                st.write(f"{row['본문']}")
+                
+                # 2. 하단 정보창 (출처 | 작성일시 ✏️) 한 줄로 배치
+                info_cols = st.columns([0.85, 0.15])
+                with info_cols[0]:
+                    # 구글 시트의 '작성일시' 칸에 적힌 날짜와 시간이 그대로 출력됩니다.
+                    st.caption(f"{row['출처']} | {row['작성일시']}")
+                with info_cols[1]:
+                    # 날짜 바로 옆에 붙는 앙증맞은 ✏️ 아이콘 버튼
+                    if st.button("✏️", key=f"pencil_{index}"):
+                        st.session_state.edit_mode_idx = index
+                        st.rerun()
+                        
+            st.write("---")
+
+except Exception as e:
+    st.error("구글 시트의 1번째 줄 이름이 [ID, 제목, 본문, 출처, 작성일시, 색상]으로 정확히 적혀있는지 확인해주세요!")
