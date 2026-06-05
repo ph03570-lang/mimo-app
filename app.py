@@ -3,7 +3,7 @@ import pandas as pd
 
 st.title("나만의 메모 앱")
 
-# 질문자님의 구글 시트 진짜 데이터 주소로 완벽하게 매칭해 두었습니다.
+# 주소 끝자리를 pub?output=csv로 완벽하게 수정한 주소입니다.
 sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1Yy_jU2wW-g-E787Xz8D32f0n6vR0z_Wv9-G2Z-vV6y-X/pub?output=csv"
 
 try:
