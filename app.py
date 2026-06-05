@@ -4,7 +4,7 @@ import pandas as pd
 st.title("나만의 메모 앱")
 
 # 주소 끝자리를 pub?output=csv로 완벽하게 수정해 두었습니다.
-sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1Yy_jU2wW-g-E787Xz8D32f0n6vR0z_Wv9-G2Z-vV6y-X/pub?output=csv"
+sheet_url = "https://docs.google.com/spreadsheets/d/1f68evGfSDpkplGOQFeOCYUpj_NV2U4E7zaPUM4HKGoI/edit?gid=0#gid=0"
 
 try:
     # 구글 시트 데이터를 실시간으로 읽어오는 코드
