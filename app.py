@@ -12,7 +12,7 @@ if 'memo_list' not in st.session_state:
 
 # --- ✍️ 접고 펼칠 수 있는 새 메모 작성 칸 ---
 # st.expander를 사용하면 클릭했을 때만 쏙 펼쳐집니다.
-with st.expander(" )", expanded=False):
+with st.expander(" ", expanded=False):
     with st.form("memo_form", clear_on_submit=True):
         new_title = st.text_input("제목")
         new_content = st.text_area("본문")
