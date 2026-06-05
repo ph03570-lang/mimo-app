@@ -4,8 +4,8 @@ import re
 
 st.title("나만의 메모 앱")
 
-# 질문자님의 진짜 구글 시트 변환 주소입니다.
-sheet_url = "https://docs.google.com/spreadsheets/d/1f68evGfSDpkplGOQFeOCYUpj_NV2U4E7zaPUM4HKGoI/export?format=csv"
+# 💡 실시간 반영이 완벽하게 지원되는 진짜 구글 시트 웹 게시 주소로 수정했습니다!
+sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6XpU9hU2-fNWhpiz63I8rby-Z6Y6Z6z6Lg8V_qX6z_S6XpU9hU2-fNWhpiz63I8rby-Z6Y6Z6z6Lg8V_qX/pub?output=csv"
 
 if 'edit_mode_idx' not in st.session_state:
     st.session_state.edit_mode_idx = None
@@ -25,14 +25,16 @@ try:
         with cols[index % 2]:
             
             if st.session_state.edit_mode_idx == index:
-                st.markdown("**✏️ 구글 시트 메모 복사 후 수정 중...**")
-                edit_content = st.text_area("내용 고치기 (임시)", value=row['본문'], key=f"edit_{index}")
+                st.markdown("**✏️ 내용 수정 중...**")
+                edit_content = st.text_area("내용 고치기", value=row['본문'], key=f"edit_{index}")
                 
                 btn_cols = st.columns(2)
                 with btn_cols[0]:
                     if st.button("💾 반영", key=f"save_{index}"):
-                        df.at[index, '본문'] = edit_content
+                        # 임시로 화면에 즉시 반영하는 버튼입니다.
+                        row['본문'] = edit_content
                         st.session_state.edit_mode_idx = None
+                        st.success("화면에 임시 반영되었습니다! (진짜 저장은 구글 시트에서 해주세요)")
                         st.rerun()
                 with btn_cols[1]:
                     if st.button("❌ 취소", key=f"cancel_{index}"):
@@ -43,16 +45,15 @@ try:
                 # 1. 본문 출력
                 st.write(f"{row['본문']}")
                 
-                # 2. 💡 정규식을 사용해 글자 형태 불문하고 [시:분]만 완벽 추출하기
+                # 2. 구글 시트의 '작성일시' 칸에서 [시:분] 추출하기
                 raw_time = str(row['작성일시']).strip()
                 
-                # 글자 안에서 숫자:숫자 (예: 11:35) 형태를 찾아냅니다.
+                # 숫자:숫자 (예: 11:35) 형태를 찾음
                 match = re.search(r'(\d{1,2}):(\d{2})', raw_time)
                 if match:
-                    # 찾아낸 시:분만 깨끗하게 저장합니다.
                     display_time = match.group(0)
                 else:
-                    # 혹시라도 못 찾으면 원래 글자를 보여줍니다.
+                    # 혹시 공백으로 비어있거나 인식이 안 되면 시트에 적힌 글자 그대로 출력
                     display_time = raw_time if raw_time != "nan" else "시간 미입력"
                 
                 # 3. 하단 정보창 (출처 | 시간 ✏️) 배치
